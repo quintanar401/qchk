@@ -1,5 +1,6 @@
 .qchk.pf:{if["["=first x:-1_1_ string x; x:(1+first where"]"=x)_x]; x[where x in"\r\n"]:" "; parse x}; / parse fn
-.qchk.ps:{x:x where not 2=0 (0 0 1 1 0 3 0 0;0 0 1 1 2 3 0 0;0 0 2 2 2 2 2 2;3 3 3 3 3 0 4 3;3 3 3 3 3 3 3 3)\"\r\n\t /\"\\"?x; x[where x in"\r\n"]:" "; parse x}; / parse str, remove comments
+/ .qchk.ps:{x:x where not 2=0 (0 0 1 1 0 3 0 0;0 0 1 1 2 3 0 0;0 0 2 2 2 2 2 2;3 3 3 3 3 0 4 3;3 3 3 3 3 3 3 3)\"\r\n\t /\"\\"?x; x[where x in"\r\n"]:" "; parse x}; / parse str, remove comments
+.qchk.ps:parse;
 .qchk.pv:{$[type[x]in 0 11h; x[0],.qchk.ve each 1_ x;.qchk.ve x]}; / parse value expr (unwind complex types)
 .qchk.ve:{$[11=abs t:type x;$[0=count x;($;(),`;());(1=count x)&11=t;(enlist;x);enlist x];0>t;$[-19>t;($;(),key x;value x);x];0=t;$[0=count x;x;enlist[enlist],.z.s each x];98>t;$[0=count x;($;(),key x;());1=count x;(enlist;.z.s x 0);
   20>t;x;($;(),key x;value x)];98=t;(flip;.z.s flip x);99=t;(!;.z.s key x;.z.s value x);t<104;x;(not null .q?x)|x in(<>;<=;>=);x;t=112;x;t>112;'"unexp";[v:.z.s each value x;$[104=t;v;enlist[(';';/;\;':;/:;\:)t-105],v]]]};
@@ -65,9 +66,13 @@
 .qchk.chkFn:{[e;l]$[not null n:.q?e;$[null v:.qchk.QMap n;[.qchk.err"access denied: ",string n;e];v];e in(<>;<=;>=);e;(t:type e)in 101 102h;e;103=t;({x ch_adv y};e);100<>type e;.qchk.chkExpr[.qchk.ve e;l];.qchk.chkUserFn[e;l]]};
 .qchk.chkUserFn:{[e;l]if[not null f:.qchk.fnMap e;:f]; if[not null first(v:value e)3;.qchk.err"non default namespaces are not allowed: ",.Q.s1 e]; :.qchk.fnMap[e]:.qchk.razeFn[v 1].qchk.chkExpr[.qchk.pf e;(raze v 1 2)except`]};
 .qchk.chkSQL:{[e;l] s:(?)~e 0; $[4>c:count e;enlist[(ch_find;ch_lsq)(!)~e 0],.qchk.chk0[.qchk.chkExpr;1_e;l];4=c;$[s;enlist[ch_exec],.qchk.chk0[.qchk.chkExpr;1_e;l];'"rank"];5=c;.qchk.chkSExp[e;l];'"rank"]};
-.qchk.chkSExp:{[e;l] isF:all v:{$[(1=count x)&0=t:type x;0;99=t;0;104=type(1;x);2;1]}each e; s:(?)~e 0; (ch_sql;$[(all 2>v)&count l;(?;`.qchk.dummy;();();({x!x:(),x};enlist l));()]),$[isF;s,.qchk.chk0[.qchk.chkExpr;1_e;1];
+/ SQL expressions get converted into a) (ch_sql;get locals expr;select or update flag;table expr;a1;a2;a3) or b) (ch_sql;get locals expr;{(sel/upd flag;x;a1;a2;a3)};table expr)
+/ the first option consumes a lot of bytecodes and may cause 'branch errors thus though it is more straightforward it is used only for functional selects/upds which args are already
+/ complex expressions unlike literal selects where args are preparsed constants. Locals are calculated only when needed. These strange constructions are needed because the SQL statement
+/ has access to locals only when it is literally ?[a;b;c;d] and we need 'a' to find out column names to check other args for invalid vars.
+.qchk.chkSExp:{[e;l] isF:all v:{$[(1=count x)&0=t:type x;0;99=t;0;104=type(1;x);2;1]}each e; s:(?)~e 0; (ch_sql;$[(all 2>v)&count l;(?;`.qchk.dummy;();();({x!x:(),x};enlist l));()]),$[isF;s,.qchk.chk0[.qchk.chkExpr;1_e;l];
   (value "{(",string[s],";x;",(";"sv .qchk.mkSExp each 2_e),")}";.qchk.chkExpr[e 1;l])]};
-.qchk.mkSExp:{.qchk.razeExp .qchk.ve $[(0=type x)&1=count x;x 0;x]}
+.qchk.mkSExp:{.qchk.razeExp .qchk.ve $[(type[x]in 0 11h)&1=count x;x 0;x]}
 .qchk.chkAssign:{[e;l]if[not -11=type v:first e 1;.qchk.err"unexpected var in assign: ",.Q.s1 v]; if[not e[0] in .qchk.as;.qchk.err"unsupported assign to ",string v]; .qchk.chkNameW[v;l]; (e 0;$[-11=type v;v;v,1_.qchk.chkExpr[e 1;l]];.qchk.chkExpr[e 2;l])};
 .qchk.chk0:{[f;e;l] i:where 104=type each(1;)each e; @[f[;l]each e;i;{.qchk.mv}]};
 .qchk.addApp:{$[1<count x;$[(t:type x 0)in 0 11 -11h;enlist[(ch_app;x 0)],1_x;t in -6 -7h;[.qchk.err"access to handles is denied";x];x];x]};
@@ -78,16 +83,16 @@
 .qchk.as:(+:;-:;*:;%:;#:;~:;^:;&:;_:;=:;|:;,:;<:;>:;:;::); / good assigns
 .qchk.mv:(value(1;))2;
 
-/ runtime sql check
+/ runtime sql check - subst locals with values, it is ok because SQL is read only + all locals are in eval exprs, take care of types 0, 11 and -11 - need to enlist them
 .qchk.chkRTSQL:{[l;s;a;b;c;d]
   l:$[0=count l;(();());(key l;value l)];
-  ll:l[0],cl:@[cols;a:$[s;.qchk.chkR;.qchk.chkW]a;()];
+  ll:l[0],cl:`i,@[cols;a:$[s;.qchk.chkR;.qchk.chkW]a;()];
   if[count b; b:.qchk.sl[cl;l].qchk.chkExpr[b;ll]]; / where
   c:$[99=type c;.qchk.sl[cl;l]each .qchk.chkExpr[;ll] each c;.qchk.sl[cl;l].qchk.chkExpr[c;ll]]; / by
   d:$[99=type d;.qchk.sl[cl;l]each .qchk.chkExpr[;ll] each d;not[s]&11=abs type d;d;.qchk.sl[cl;l].qchk.chkExpr[d;ll]]; / what
   : ((!;?)s)[a;b;c;d];
  };
-.qchk.sl:{[a;l;e] $[-11=t:type e;$[e in a;e;count[l 0]=i:l[0]?e;e;l[1;i]];t in 0 11h;$[(ch_sql)~e 0;[e[2]:l[0]!l 1;e];.z.s[a;l]each e];e]}; / subst locals
+.qchk.sl:{[a;l;e] $[-11=t:type e;$[e in a;e;count[l 0]=i:l[0]?e;e;{$[type[x]in 0 11 -11h;enlist x;x]}l[1;i]];t in 0 11h;$[(ch_sql)~e 0;[e[1]:l[0]!l 1;e];.z.s[a;l]each e];e]}; / subst locals
 
 / handlers
 .qchk.chkNameR:{[n;l] $[n in l;n;.qchk.chkR n]};
@@ -97,3 +102,4 @@
 .qchk.chkW:{if[-11=type x;.qchk.err "access denied: ",string x];x}; / write access
 .qchk.chkRFlt:{raze @[.qchk.chkR;;`$()]each x}; / filter read
 .qchk.err:{'x};
+.qchk.check:{.qchk.chkExpr $[10=type x;.qchk.ps x;x]}; / eval is expected to evaluate the result, x - either string or the parse result

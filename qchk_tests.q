@@ -1,4 +1,5 @@
 system  "l ",.z.x 0;
+\c 50 200
 
 .test.t:([]sym:3#`ibm;time:10:01:01 10:01:04 10:01:08;price:100 101 105);
 .test.q:([]sym:9#`ibm;time:10:01:01+til 9;ask:100 103 103 104 104 107 108 107 108;bid:98 99 102 103 103 104 106 106 107);
@@ -83,8 +84,8 @@ tests:
   ("{rload 1}[]";"*denied*");
   (".[rload;(),1]";"*denied*");
   ("{.[rload;(),1]}[]";"*denied*");
-  ("dsave 1";"*denied*");
-  ("{dsave 1}[]";"*denied*");
+  ("`a dsave `a";"*denied*");
+  ("{`a dsave `a}[]";"*denied*");
   (".[dsave;(),1]";"*denied*");
   ("{.[dsave;(),1]}[]";"*denied*");
   ("1 setenv 1";"*denied*");
@@ -97,8 +98,8 @@ tests:
   (".[value;(),(+)]";"*only enums*");
   ("{.[value;(),(+)]}[]";"*only enums*");
   ("value `a";"*denied*");
-  ("value(+;1;2)";"*denied*");
-  ("value \".test.a\"";"*denied*");
+  ("value(+;1;2)";"*only enums*");
+  ("value \".test.a\"";"*only enums*");
   (".test.a:10; value`.test.a";10);
   ("value([a:1 2 3] b:1 2 3)";([]b:1 2 3));
   ("{value([a:1 2 3] b:1 2 3)}[]";([]b:1 2 3));
@@ -156,7 +157,7 @@ tests:
   ("{key `a}[]";"*denied*");
   (".[key;(),`a]";"*denied*");
   ("{.[key;(),`a]}[]";"*denied*");
-  ("parse\"1+2\"";(+1;2));
+  ("parse\"1+2\"";(+;1;2));
   ("parse\"hclose 1\"";"*denied*");
   ("`.test.a set 10";`.test.a);
   ("`a set 10";"*denied*");
@@ -235,8 +236,8 @@ tests:
   ("`f'[1 1;2 2]";"*denied*");
   ("1 `f/:1 2";"*denied*");
   ("{1 `f/:1 2}[]";"*denied*");
-  ("1 `f\:1 2";"*denied*");
-  ("{1 `f\:1 2}[]";"*denied*");
+  ("1 `f\\:1 2";"*denied*");
+  ("{1 `f\\:1 2}[]";"*denied*");
   / select/delete
   (".test.a:([]a:1 2 3); .test.aa:2; count[select from .test.a]+count[select from `.test.a where a<3]+count[delete from .test.a where a=.test.aa]+count[delete from `.test.a where a<2]";5);
   (".test.a:([]a:1 2 3); .test.aa:2; {[b] c:3; count[select from .test.a]+count[select from `.test.a where a<c]+count[delete from .test.a where a=b]+count[delete from `.test.a where a<.test.aa]}[2]";5);
@@ -250,14 +251,14 @@ tests:
   ("{select noA from `.test.a}[]";"*denied*");
   ("select from `.test.a where noA>2";"*denied*");
   ("{select from `.test.a where noA>2}[]";"*denied*");
-  ("select by noA from `.test.a";"*denied");
-  ("{select by noA from `.test.a}[]";"*denied");
+  ("select by noA from `.test.a";"*denied*");
+  ("{select by noA from `.test.a}[]";"*denied*");
   ("exec t!t from `.test.a";"*denied*");
   ("{exec t!t from `.test.a}[]";"*denied*");
   ("{delete from `.test.a where noA>2}[]";"*denied*");
   ("delete from `.test.a where noA>2";"*denied*");
   ("update from `a";"*denied*");
-  ("{update from `a}[]";"*denied*")
+  ("{update from `a}[]";"*denied*");
   ("update c:noA+1 from .test.a";"*denied*");
   ("{update c:noA+1 from .test.a}[]";"*denied*");
   ("update by noA from `.test.a";"*denied*");
@@ -274,10 +275,14 @@ tests:
   ("{count select c from ([]c:`c1`c2`c3`c4`c5`c5;d:1 2 3 4 5 6) where d in (select a from ([]a:1 2 3 4 5 6;b:1 2 1 2 1 2)where d=1)`a}[]";"*denied*");
   ("count select c from ([]c:`c1`c2`c3`c4`c5`c5;d:1 2 3 4 5 6) where dd in (select a from ([]a:1 2 3 4 5 6;b:1 2 1 2 1 2)where b=1)`a";"*denied*");
   ("{count select c from ([]c:`c1`c2`c3`c4`c5`c5;d:1 2 3 4 5 6) where dd in (select a from ([]a:1 2 3 4 5 6;b:1 2 1 2 1 2)where b=1)`a}[]";"*denied*");
-  ("count exec c from ([]c:`c1`c2`c3`c4`c5`c5;d:1 2 3 4 5 6) where d in (exec a from ([]a:1 2 3 4 5 6;b:1 2 1 2 1 2)where b=1)")
+  ("count exec c from ([]c:`c1`c2`c3`c4`c5`c5;d:1 2 3 4 5 6) where d in (exec a from ([]a:1 2 3 4 5 6;b:1 2 1 2 1 2)where b=1)";3)
  )
 
 
 test:{eval .qchk.chkExpr[parse x;()]};
 .qchk.chkR:{if[-11=type x;if[not x like ".test*";.qchk.err "access denied: ",string x]];x}; / read access
 .qchk.chkW:{if[-11=type x;if[not x like ".test*";.qchk.err "access denied: ",string x]];x}; / write access
+
+{r:@[test;x 0;{x}]; if[not $[(10=type x 1)&10=type r;r like x 1;r~x 1]; -1 "FAILED: ",.Q.s1[x]," with ",.Q.s1 r]} each tests;
+
+exit 0;
