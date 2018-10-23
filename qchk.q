@@ -102,4 +102,4 @@
 .qchk.chkW:{if[-11=type x;.qchk.err "access denied: ",string x];x}; / write access
 .qchk.chkRFlt:{raze @[.qchk.chkR;;`$()]each x}; / filter read
 .qchk.err:{'x};
-.qchk.check:{.qchk.chkExpr $[10=type x;.qchk.ps x;x]}; / eval is expected to evaluate the result, x - either string or the parse result
+.qchk.check:{.qchk.chkExpr $[10=type x;.qchk.ps x;x]}; / eval is expected to evaluate the result, x - either string or expr

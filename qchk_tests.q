@@ -275,11 +275,25 @@ tests:
   ("{count select c from ([]c:`c1`c2`c3`c4`c5`c5;d:1 2 3 4 5 6) where d in (select a from ([]a:1 2 3 4 5 6;b:1 2 1 2 1 2)where d=1)`a}[]";"*denied*");
   ("count select c from ([]c:`c1`c2`c3`c4`c5`c5;d:1 2 3 4 5 6) where dd in (select a from ([]a:1 2 3 4 5 6;b:1 2 1 2 1 2)where b=1)`a";"*denied*");
   ("{count select c from ([]c:`c1`c2`c3`c4`c5`c5;d:1 2 3 4 5 6) where dd in (select a from ([]a:1 2 3 4 5 6;b:1 2 1 2 1 2)where b=1)`a}[]";"*denied*");
-  ("count exec c from ([]c:`c1`c2`c3`c4`c5`c5;d:1 2 3 4 5 6) where d in (exec a from ([]a:1 2 3 4 5 6;b:1 2 1 2 1 2)where b=1)";3)
+  ("(select last i from ([] a:til 10))`x";enlist 9);
+  ("{select last i from ([] a:til 10)}[]`x";enlist 9);
+  ("(select last i from ([] a:til 10) where a<exec last i from ([] b:til 5))`x";enlist 3);
+  ("{select last i from ([] a:til 10) where a<exec last i from ([] b:til 5)}[]`x";enlist 3);
+  ("{i:1 2; select last i from ([] a:til 10)}[]`x";enlist 9);
+  ("{i:1 2; select last i from ([] a:til 10) where a<exec last i from ([] b:til 5)}[]`x";enlist 3);
+  ("{b:2; exec 2*first a from ([] a:til 10) where a=b}[]";4);
+  ("{b:(2;::); exec 2*first a from ([] a:til 10) where a=b 0}[]";4);
+  ("{b:`a; exec first a from ([] a:`j`k`a`l) where a=b}[]";`a);
+  ("{b:`a`b; exec last a from ([] a:`j`k`a`b`l) where a in b}[]";`b);
+  ("{b:2; exec last d from ([] d:til 10) where d<(exec 2*first a from ([] a:til 10) where a=b)}[]";3);
+  ("{b:(2;::); exec last d from ([] d:til 10) where d<(exec 2*first a from ([] a:til 10) where a=b 0)}[]";3);
+  ("{b:`a; exec last d from ([] d:til 10) where d< exec first i from ([] a:`j`k`a`l) where a=b}[]";1);
+  ("{b:`a`b; exec last d from ([] d:til 10) where d< exec last i from ([] a:`j`k`a`b`l) where a in b}[]";2);
+  (({x`a};`a`b!(1;hopen));"*denied*")
  )
 
 
-test:{eval .qchk.chkExpr[parse x;()]};
+test:{eval .qchk.chkExpr[$[10=type x;parse x;x];()]};
 .qchk.chkR:{if[-11=type x;if[not x like ".test*";.qchk.err "access denied: ",string x]];x}; / read access
 .qchk.chkW:{if[-11=type x;if[not x like ".test*";.qchk.err "access denied: ",string x]];x}; / write access
 
