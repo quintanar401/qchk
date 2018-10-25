@@ -1,9 +1,9 @@
-.qchk.pf:{if["["=first x:-1_1_ string x; x:(1+first where"]"=x)_x]; x[where x in"\r\n"]:" "; parse x}; / parse fn
+.qchk.pf:{if["["=first x:trim -1_1_ string x; x:(1+first where"]"=x)_x]; parse x}; / parse fn
 / .qchk.ps:{x:x where not 2=0 (0 0 1 1 0 3 0 0;0 0 1 1 2 3 0 0;0 0 2 2 2 2 2 2;3 3 3 3 3 0 4 3;3 3 3 3 3 3 3 3)\"\r\n\t /\"\\"?x; x[where x in"\r\n"]:" "; parse x}; / parse str, remove comments
 .qchk.ps:parse;
 .qchk.pv:{$[type[x]in 0 11h; x[0],.qchk.ve each 1_ x;.qchk.ve x]}; / parse value expr (unwind complex types)
 .qchk.ve:{$[11=abs t:type x;$[0=count x;($;(),`;());(1=count x)&11=t;(enlist;x);enlist x];0>t;$[-19>t;($;(),key x;value x);x];0=t;$[0=count x;x;enlist[enlist],.z.s each x];98>t;$[0=count x;($;(),key x;());1=count x;(enlist;.z.s x 0);
-  20>t;x;($;(),key x;value x)];98=t;(flip;.z.s flip x);99=t;(!;.z.s key x;.z.s value x);t<104;x;(not null .q?x)|x in(<>;<=;>=);x;t=112;x;t>112;'"unexp";[v:.z.s each value x;$[104=t;v;enlist[(';';/;\;':;/:;\:)t-105],v]]]};
+  20>t;x;($;(),key x;value x)];98=t;(flip;.z.s flip x);99=t;(!;.z.s key x;.z.s value x);t<104;x;(not null .q?x)|x in(<>;<=;>=);x;t=112;x;t>112;'"unexp";[v:.z.s each value x;$[104=t;v;((';';/;\;':;/:;\:)t-105;v)]]]};
 
 / raze accepts only pure unbreakable exprs (with exception of .q primitives). Apply .qchk.ve first to all composite values including `$(), enlist 1 and etc.
 .qchk.razeFn:{[a;e] value"{[",(";"sv string a),"]",$[(";"~first e)&0=type e;";\n  "sv .qchk.razeExp each 1_e;.qchk.razeExp e],"}"};
