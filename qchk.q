@@ -1,7 +1,7 @@
 .qchk.pf:{if["["=first x:trim -1_1_ string x; x:(1+first where"]"=x)_x]; parse x}; / parse fn
 / .qchk.ps:{x:x where not 2=0 (0 0 1 1 0 3 0 0;0 0 1 1 2 3 0 0;0 0 2 2 2 2 2 2;3 3 3 3 3 0 4 3;3 3 3 3 3 3 3 3)\"\r\n\t /\"\\"?x; x[where x in"\r\n"]:" "; parse x}; / parse str, remove comments
 .qchk.ps:parse;
-.qchk.pv:{$[type[x]in 0 11h; x[0],.qchk.ve each 1_ x;.qchk.ve x]}; / parse value expr (unwind complex types)
+.qchk.pv:{$[type[x]in 0 11h; enlist[$[10=type x 0;`$x 0;x 0]],.qchk.ve each 1_ x;.qchk.ve x]}; / parse value expr (unwind complex types)
 .qchk.ve:{$[11=abs t:type x;$[0=count x;($;(),`;());(1=count x)&11=t;(enlist;x);enlist x];0>t;$[-19>t;($;(),key x;value x);x];0=t;$[0=count x;x;enlist[enlist],.z.s each x];98>t;$[0=count x;($;(),key x;());1=count x;(enlist;.z.s x 0);
   20>t;x;($;(),key x;value x)];98=t;(flip;.z.s flip x);99=t;(!;.z.s key x;.z.s value x);t<104;x;(not null .q?x)|x in(<>;<=;>=);x;t=112;x;t>112;'"unexp";[v:.z.s each value x;$[104=t;v;((';';/;\;':;/:;\:)t-105;v)]]]};
 
@@ -38,7 +38,7 @@
 .q.ch_dot4:{[x;y;z;a].[x;y;$[100>type x:.qchk.chkW x;.qchk.chkH .qchk.chkR z;z];a]};
 .q.ch_lsq:{if[(type x)in -6 -7h;if[(x<0)|null x;.qchk.err"access to internal functions like -n!exp is denied"]]; ![.qchk.chkR x;.qchk.chkW y]}; / !
 .q.ch_find:{?[.qchk.chkW x;$[-11=type y;$[y in`0`1`2`3`4`5`6`7`8;y;.qchk.chkR y];y]]}; / ?
-.q.ch_exec:{if[1=type x;:?[x;y;z]]; ?[x;y;.qchk.chkExpr[z;cols x]]};
+.q.ch_exec:{if[1=type x;:?[x;y;z]]; ?[x;y;.qchk.chkExpr[z;@[{`i,cols x};x;`$()]]]};
 .q.ch_tables:{$[any x~/:(::;`;`.);.qchk.chkRFlt tables[];-11=type x;tables .qchk.chkR x;'"type"]};
 .q.ch_views:{.qchk.chkRFlt views[]};
 .q.ch_view:{view .qchk.chkR x};
@@ -57,7 +57,7 @@
 .q.ch_adv:{.qchk.chkH .qchk.chkR x};
 .q.ch_comp:{(')[.qchk.chkH .qchk.chkR x;.qchk.chkH .qchk.chkR y]};
 .q.ch_sql:{$[6=count x;.qchk.chkRTSQL . x;3=count x;.qchk.chkRTSQL[x 0]. x[1] x 2;'"rank"]} enlist ::;
-.q.ch_system:{x,:(); $[x~(),"a";tables[];x~(),"f";.qchk.chkRFlt system "f";[.qchk.err"access to system is denied";system x]]};
+.q.ch_system:{x,:(); $[x~(),"a";.qchk.chkRFlt tables[];x~(),"f";.qchk.chkRFlt system "f";[.qchk.err"access to system is denied";system x]]};
 
 .qchk.dummy:(`$())!();
 .qchk.chkExpr:{[e;l]$[0=count e;e;0=t:type e;.qchk.chkCall[e;l];11=t;$[1=count e;e;.qchk.addApp .qchk.chkNameR[;l] each e];-11=t;.qchk.chkNameR[e;l];98>t;e;100>t;.z.s[.qchk.ve e;l];112>t;.qchk.chkFn[e;l];[.qchk.err"access denied to ",.Q.s1 e;e]]};
@@ -78,7 +78,7 @@
 .qchk.addApp:{$[1<count x;$[(t:type x 0)in 0 11 -11h;enlist[(ch_app;x 0)],1_x;t in -6 -7h;[.qchk.err"access to handles is denied";x];x];x]};
 .qchk.ifnMap:(({ch_at2};{ch_at2};{ch_at3};{ch_at4};{'"@: rank"});({ch_dot2};{ch_dot2};{ch_dot3};{ch_dot4};{'".: rank"}));
 .qchk.fnMap:{x!x}enlist(::); / processed user fns
-.qchk.QMap:{x!.q x}(key .q)except``hopen`hclose`hcount`read0`read1`exit`0:`1:`2:`2::`save`load`rsave`rload`setenv`view`views`dsave; / named Q fns except denied
+.qchk.QMap:{x!.q x}(key .q)except``hopen`hclose`hcount`read0`read1`exit`0:`1:`2:`2::`save`load`rsave`rload`setenv`dsave; / named Q fns except denied
 .qchk.QMap,:{kk:`$3_/:string k:k where(k:key .q)like"ch_*"; kk[i]!.q k i:where kk in key .q}[];
 .qchk.as:(+:;-:;*:;%:;#:;~:;^:;&:;_:;=:;|:;,:;<:;>:;:;::); / good assigns
 .qchk.mv:(value(1;))2;
@@ -86,7 +86,7 @@
 / runtime sql check - subst locals with values, it is ok because SQL is read only + all locals are in eval exprs, take care of types 0, 11 and -11 - need to enlist them
 .qchk.chkRTSQL:{[l;s;a;b;c;d]
   l:$[0=count l;(();());(key l;value l)];
-  ll:l[0],cl:`i,@[cols;a:$[s;.qchk.chkR;.qchk.chkW]a;()];
+  ll:l[0],cl:@[{`i,cols x};a:$[s;.qchk.chkR;.qchk.chkW]a;()];
   if[count b; b:.qchk.sl[cl;l].qchk.chkExpr[b;ll]]; / where
   c:$[99=type c;.qchk.sl[cl;l]each .qchk.chkExpr[;ll] each c;.qchk.sl[cl;l].qchk.chkExpr[c;ll]]; / by
   d:$[99=type d;.qchk.sl[cl;l]each .qchk.chkExpr[;ll] each d;not[s]&11=abs type d;d;.qchk.sl[cl;l].qchk.chkExpr[d;ll]]; / what
@@ -102,4 +102,5 @@
 .qchk.chkW:{if[-11=type x;.qchk.err "access denied: ",string x];x}; / write access
 .qchk.chkRFlt:{raze @[.qchk.chkR;;`$()]each x}; / filter read
 .qchk.err:{'x};
-.qchk.check:{.qchk.chkExpr $[10=type x;.qchk.ps x;x]}; / eval is expected to evaluate the result, x - either string or expr
+.qchk.check:{.qchk.chkExpr $[10=type x;.qchk.ps x;x]}; / eval is expected to evaluate the result, x - either string or parse expr
+.qchk.checkv:{.qchk.chkExpr $[10=type x;.qchk.ps x;.qchk.pv x]}; / like check but for value expressions
