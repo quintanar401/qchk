@@ -293,6 +293,14 @@ tests:
   ("{b:(2;::); exec last d from ([] d:til 10) where d<(exec 2*first a from ([] a:til 10) where a=b 0)}[]";3);
   ("{b:`a; exec last d from ([] d:til 10) where d< exec first i from ([] a:`j`k`a`l) where a=b}[]";1);
   ("{b:`a`b; exec last d from ([] d:til 10) where d< exec last i from ([] a:`j`k`a`b`l) where a in b}[]";2);
+  ("select a from ([] a:til 10) where a in (exec b from (select from ([] b: til 10)))";([] a:til 10));
+  ("{select a from ([] a:til 10) where a in (exec b from (select from ([] b: til 10)))}[]";([] a:til 10));
+  ("select from ([] a:til 10) where 1,a=1";"type");
+  ("{select from ([] a:til 10) where 1,a=1}[]";"type");
+  (".test.d:`a`b!1 2; .test.d[`a]:10; .test.d`a";10);
+  ("{d:`a`b!1 2; d[`a]:10; d`a}[]";10);
+  ("{a:1 2; b:3 4; a,'b}[]";(1 3;2 4));
+  (".test.a:1 2; .test.b:3 4; .test.a,'.test.b";(1 3;2 4));
   (({x`a};`a`b!(1;hopen));"*denied*")
  )
 

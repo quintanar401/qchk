@@ -8,7 +8,7 @@
 / raze accepts only pure unbreakable exprs (with exception of .q primitives). Apply .qchk.ve first to all composite values including `$(), enlist 1 and etc.
 .qchk.razeFn:{[a;e] value"{[",(";"sv string a),"]",$[(";"~first e)&0=type e;";\n  "sv .qchk.razeExp each 1_e;.qchk.razeExp e],"}"};
 .qchk.razeExp:{$[(t>99)|0>t:type x;.qchk.razeA x;t in 0 11h;.qchk.raze0 x;20>t;.qchk.razeL x;'"unexpected expr: ",.Q.s1 x]};
-.qchk.razeA:{$[type[x]within 100 111h;$[104=type(1;x);"";null n:.q?x;$[100<type x;"(",string[x],")";string x];string n];(t:.Q.t abs type x)in" g";'"unsupported atom: ",.Q.s1 x;t="s";string x;$[x<0;" ";()],.Q.s1 x]};
+.qchk.razeA:{$[type[x]within 100 111h;$[104=type(1;x);"";null n:.q?x;string x;string n];(t:.Q.t abs type x)in" g";'"unsupported atom: ",.Q.s1 x;t="s";string x;$[x<0;" ";()],.Q.s1 x]};
 .qchk.raze0:{if[0=c:count x;:"()"]; x0:x 0; if[1=c;:$[11=type x0;$[1=count x0;"enlist ",;::]raze"`",/:string x0;-11=type x0;"`",string x0;"enlist ",.qchk.razeExp x0]]; v:.qchk.razeExp each x; v1:";"sv 1_v;
   if[-10=t:type x0; :$[x0=";";"[",v1,"]";x0 in "':";"(",x0,v1,")";v[0],"[",v1,"]"]]; $[(2=c)&103=t;"((",v[1],")",v[0],")";x0~(enlist);$[2=c;v[0]," ",v1;"(",v1,")"];(c=3)&$[101=type x0;20>value x0;x0~(:)];v[1],string[x0]," ",v 2;v[0],"[",v1,"]"]};
 .qchk.razeL:{t:.Q.t type x; $[t in " gef";"(",(";"sv .qchk.razeA each x),")";t="c";"\"",raze[.qchk.CMap x],"\"";t="s";raze"`",/:string x;t="x";"0x",raze string x;t="b";(raze string x),t;(raze" ",/:@[string x;where null x;{[x;y]x}.Q.s1 x -1]),t]};
@@ -73,7 +73,7 @@
 .qchk.chkSExp:{[e;l] isF:all v:{$[(1=count x)&0=t:type x;0;99=t;0;104=type(1;x);2;1]}each e; s:(?)~e 0; (ch_sql;$[(all 2>v)&count l;(?;`.qchk.dummy;();();({x!x:(),x};enlist l));()]),$[isF;s,.qchk.chk0[.qchk.chkExpr;1_e;l];
   (value "{(",string[s],";x;",(";"sv .qchk.mkSExp each 2_e),")}";.qchk.chkExpr[e 1;l])]};
 .qchk.mkSExp:{.qchk.razeExp .qchk.ve $[(type[x]in 0 11h)&1=count x;x 0;x]}
-.qchk.chkAssign:{[e;l]if[not -11=type v:first e 1;.qchk.err"unexpected var in assign: ",.Q.s1 v]; if[not e[0] in .qchk.as;.qchk.err"unsupported assign to ",string v]; .qchk.chkNameW[v;l]; (e 0;$[-11=type v;v;v,1_.qchk.chkExpr[e 1;l]];.qchk.chkExpr[e 2;l])};
+.qchk.chkAssign:{[e;l]if[not -11=type v:first e 1;.qchk.err"unexpected var in assign: ",.Q.s1 v]; if[not e[0] in .qchk.as;.qchk.err"unsupported assign to ",string v]; .qchk.chkNameW[v;l]; (e 0;$[-11=type e 1;v;v,1_.qchk.chkExpr[e 1;l]];.qchk.chkExpr[e 2;l])};
 .qchk.chk0:{[f;e;l] i:where 104=type each(1;)each e; @[f[;l]each e;i;{.qchk.mv}]};
 .qchk.addApp:{$[1<count x;$[(t:type x 0)in 0 11 -11h;enlist[(ch_app;x 0)],1_x;t in -6 -7h;[.qchk.err"access to handles is denied";x];x];x]};
 .qchk.ifnMap:(({ch_at2};{ch_at2};{ch_at3};{ch_at4};{'"@: rank"});({ch_dot2};{ch_dot2};{ch_dot3};{ch_dot4};{'".: rank"}));
@@ -87,12 +87,12 @@
 .qchk.chkRTSQL:{[l;s;a;b;c;d]
   l:$[0=count l;(();());(key l;value l)];
   ll:l[0],cl:@[{`i,cols x};a:$[s;.qchk.chkR;.qchk.chkW]a;()];
-  if[count b; b:.qchk.sl[cl;l].qchk.chkExpr[b;ll]]; / where
+  if[count b; b:.qchk.sl[cl;l]each .qchk.chkExpr[;ll] each b]; / where
   c:$[99=type c;.qchk.sl[cl;l]each .qchk.chkExpr[;ll] each c;.qchk.sl[cl;l].qchk.chkExpr[c;ll]]; / by
   d:$[99=type d;.qchk.sl[cl;l]each .qchk.chkExpr[;ll] each d;not[s]&11=abs type d;d;.qchk.sl[cl;l].qchk.chkExpr[d;ll]]; / what
   : ((!;?)s)[a;b;c;d];
  };
-.qchk.sl:{[a;l;e] $[-11=t:type e;$[e in a;e;count[l 0]=i:l[0]?e;e;{$[type[x]in 0 11 -11h;enlist x;x]}l[1;i]];t in 0 11h;$[(ch_sql)~e 0;[e[1]:l[0]!l 1;e];.z.s[a;l]each e];e]}; / subst locals
+.qchk.sl:{[a;l;e] $[-11=t:type e;$[e in a;e;count[l 0]=i:l[0]?e;e;{$[type[x]in 0 11 -11h;enlist x;x]}l[1;i]];t in 0 11h;$[2>count e;e;(ch_sql)~e 0;[e[1]:l[0]!l 1;.z.s[a;l]each e];.z.s[a;l]each e];e]}; / subst locals
 
 / handlers
 .qchk.chkNameR:{[n;l] $[n in l;n;.qchk.chkR n]};
@@ -102,5 +102,5 @@
 .qchk.chkW:{if[-11=type x;.qchk.err "access denied: ",string x];x}; / write access
 .qchk.chkRFlt:{raze @[.qchk.chkR;;`$()]each x}; / filter read
 .qchk.err:{'x};
-.qchk.check:{.qchk.chkExpr $[10=type x;.qchk.ps x;x]}; / eval is expected to evaluate the result, x - either string or parse expr
-.qchk.checkv:{.qchk.chkExpr $[10=type x;.qchk.ps x;.qchk.pv x]}; / like check but for value expressions
+.qchk.check:{.qchk.chkExpr[$[10=type x;.qchk.ps x;x];`$()]}; / eval is expected to evaluate the result, x - either string or parse expr
+.qchk.checkv:{.qchk.chkExpr[$[10=type x;.qchk.ps x;.qchk.pv x];`$()]}; / like check but for value expressions
