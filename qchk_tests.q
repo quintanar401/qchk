@@ -301,7 +301,9 @@ tests:
   ("{d:`a`b!1 2; d[`a]:10; d`a}[]";10);
   ("{a:1 2; b:3 4; a,'b}[]";(1 3;2 4));
   (".test.a:1 2; .test.b:3 4; .test.a,'.test.b";(1 3;2 4));
-  (({x`a};`a`b!(1;hopen));"*denied*")
+  (({x`a};`a`b!(1;hopen));"*denied*");
+  ("{sum exec {x+y}[;1] each a from ([] a: til 10)}[]";55);
+  ("sum exec {x+y}[;1] each a from ([] a: til 10)";55)
  )
 
 

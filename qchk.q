@@ -10,7 +10,8 @@
 .qchk.razeExp:{$[(t>99)|0>t:type x;.qchk.razeA x;t in 0 11h;.qchk.raze0 x;20>t;.qchk.razeL x;'"unexpected expr: ",.Q.s1 x]};
 .qchk.razeA:{$[type[x]within 100 111h;$[104=type(1;x);"";null n:.q?x;string x;string n];(t:.Q.t abs type x)in" g";'"unsupported atom: ",.Q.s1 x;t="s";string x;$[x<0;" ";()],.Q.s1 x]};
 .qchk.raze0:{if[0=c:count x;:"()"]; x0:x 0; if[1=c;:$[11=type x0;$[1=count x0;"enlist ",;::]raze"`",/:string x0;-11=type x0;"`",string x0;"enlist ",.qchk.razeExp x0]]; v:.qchk.razeExp each x; v1:";"sv 1_v;
-  if[-10=t:type x0; :$[x0=";";"[",v1,"]";x0 in "':";"(",x0,v1,")";v[0],"[",v1,"]"]]; $[(2=c)&103=t;"((",v[1],")",v[0],")";x0~(enlist);$[2=c;v[0]," ",v1;"(",v1,")"];(c=3)&$[101=type x0;20>value x0;x0~(:)];v[1],string[x0]," ",v 2;v[0],"[",v1,"]"]};
+  if[-10=t:type x0; :$[x0=";";"[",v1,"]";x0 in "':";"(",x0,v1,")";v[0],"[",v1,"]"]]; $[(2=c)&103=t;"((",v[1],")",v[0],")";x0~(enlist);$[2=c;v[0]," ",v1;"(",.qchk.raze00[v;v1],")"];(c=3)&$[101=type x0;20>value x0;x0~(:)];v[1],string[x0]," ",v 2;v[0],"[",v1,"]"]};
+.qchk.raze00:{[v;v1] if[0=count i:where 0=count each v; :v1]; ";"sv @[1_v;i-1;{"enlist .qchk.mv"}]};
 .qchk.razeL:{t:.Q.t type x; $[t in " gef";"(",(";"sv .qchk.razeA each x),")";t="c";"\"",raze[.qchk.CMap x],"\"";t="s";raze"`",/:string x;t="x";"0x",raze string x;t="b";(raze string x),t;(raze" ",/:@[string x;where null x;{[x;y]x}.Q.s1 x -1]),t]};
 .qchk.CMap:(-1_1_)each .Q.s1 each "c"$til 256;
 
@@ -61,10 +62,10 @@
 
 .qchk.dummy:(`$())!();
 .qchk.chkExpr:{[e;l]$[0=count e;e;0=t:type e;.qchk.chkCall[e;l];11=t;$[1=count e;e;.qchk.addApp .qchk.chkNameR[;l] each e];-11=t;.qchk.chkNameR[e;l];98>t;e;100>t;.z.s[.qchk.ve e;l];112>t;.qchk.chkFn[e;l];[.qchk.err"access denied to ",.Q.s1 e;e]]};
-.qchk.chkCall:{[e;l]$[(1=c:count e)&11=type e0:e 0;e;((c>3)&e0~($))|any e0~/:`do`while`if;e0,.qchk.chk0[.qchk.chkExpr;1_e;l];any e0~/:(?;!);.qchk.chkSQL[e;l];any e0~/:(@;.);.qchk.ifnMap[e0~(.);0|3&c-2][],.qchk.chk0[.qchk.chkExpr;1_e;l];
+.qchk.chkCall:{[e;l]$[(1=c:count e)&11=type e0:e 0;e;104=type(1;e0);e;((c>3)&e0~($))|any e0~/:`do`while`if;e0,.qchk.chk0[.qchk.chkExpr;1_e;l];any e0~/:(?;!);.qchk.chkSQL[e;l];any e0~/:(@;.);.qchk.ifnMap[e0~(.);0|3&c-2][],.qchk.chk0[.qchk.chkExpr;1_e;l];
   (c=3)&$[101=type e0;20>value e0;e0~(:)];.qchk.chkAssign[e;l];103=type e0;[v:.qchk.chk0[.qchk.chkExpr;1_e;l];$[2=c;(e0;(ch_adv),v);(3=c)&(')~e0;(ch_comp),v;'"bad adverb"]];.qchk.addApp .qchk.chk0[.qchk.chkExpr;e;l]]};
 .qchk.chkFn:{[e;l]$[not null n:.q?e;$[null v:.qchk.QMap n;[.qchk.err"access denied: ",string n;e];v];e in(<>;<=;>=);e;(t:type e)in 101 102h;e;103=t;({x ch_adv y};e);100<>type e;.qchk.chkExpr[.qchk.ve e;l];.qchk.chkUserFn[e;l]]};
-.qchk.chkUserFn:{[e;l]if[not null f:.qchk.fnMap e;:f]; if[not null first(v:value e)3;.qchk.err"non default namespaces are not allowed: ",.Q.s1 e]; :.qchk.fnMap[e]:.qchk.razeFn[v 1].qchk.chkExpr[.qchk.pf e;(raze v 1 2)except`]};
+.qchk.chkUserFn:{[e;l]if[not null f:.qchk.fnMap e;:f]; if[e in value .qchk.fnMap; :e]; if[not null first(v:value e)3;.qchk.err"non default namespaces are not allowed: ",.Q.s1 e]; :.qchk.fnMap[e]:.qchk.razeFn[v 1].qchk.chkExpr[.qchk.pf e;(raze v 1 2)except`]};
 .qchk.chkSQL:{[e;l] s:(?)~e 0; $[4>c:count e;enlist[(ch_find;ch_lsq)(!)~e 0],.qchk.chk0[.qchk.chkExpr;1_e;l];4=c;$[s;enlist[ch_exec],.qchk.chk0[.qchk.chkExpr;1_e;l];'"rank"];5=c;.qchk.chkSExp[e;l];'"rank"]};
 / SQL expressions get converted into a) (ch_sql;get locals expr;select or update flag;table expr;a1;a2;a3) or b) (ch_sql;get locals expr;{(sel/upd flag;x;a1;a2;a3)};table expr)
 / the first option consumes a lot of bytecodes and may cause 'branch errors thus though it is more straightforward it is used only for functional selects/upds which args are already
@@ -92,7 +93,8 @@
   d:$[99=type d;.qchk.sl[cl;l]each .qchk.chkExpr[;ll] each d;not[s]&11=abs type d;d;.qchk.sl[cl;l].qchk.chkExpr[d;ll]]; / what
   : ((!;?)s)[a;b;c;d];
  };
-.qchk.sl:{[a;l;e] $[-11=t:type e;$[e in a;e;count[l 0]=i:l[0]?e;e;{$[type[x]in 0 11 -11h;enlist x;x]}l[1;i]];t in 0 11h;$[2>count e;e;(ch_sql)~e 0;[e[1]:l[0]!l 1;.z.s[a;l]each e];.z.s[a;l]each e];e]}; / subst locals
+.qchk.sl:{[a;l;e] $[-11=t:type e;$[e in a;e;count[l 0]=i:l[0]?e;e;{$[type[x]in 0 11 -11h;enlist x;x]}l[1;i]];t in 0 11h;$[2>count e;e;(ch_sql)~e 0;[e[1]:l[0]!l 1;.qchk.sl0[a;l;e]];.qchk.sl0[a;l;e]];e]}; / subst locals
+.qchk.sl0:{[a;l;e] i:where 104=type each(1;)each e; @[.qchk.sl[a;l]each e;i;{.qchk.mv}]};
 
 / handlers
 .qchk.chkNameR:{[n;l] $[n in l;n;.qchk.chkR n]};
