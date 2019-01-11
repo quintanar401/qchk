@@ -62,7 +62,7 @@
 
 .qchk.dummy:(`$())!();
 .qchk.chkExpr:{[e;l]$[0=count e;e;0=t:type e;.qchk.chkCall[e;l];11=t;$[1=count e;e;.qchk.addApp .qchk.chkNameR[;l] each e];-11=t;.qchk.chkNameR[e;l];98>t;e;100>t;.z.s[.qchk.ve e;l];112>t;.qchk.chkFn[e;l];[.qchk.err"access denied to ",.Q.s1 e;e]]};
-.qchk.chkCall:{[e;l]$[(1=c:count e)&11=type e0:e 0;e;104=type(1;e0);e;((c>3)&e0~($))|any e0~/:`do`while`if;e0,.qchk.chk0[.qchk.chkExpr;1_e;l];any e0~/:(?;!);.qchk.chkSQL[e;l];any e0~/:(@;.);.qchk.ifnMap[e0~(.);0|3&c-2][],.qchk.chk0[.qchk.chkExpr;1_e;l];
+.qchk.chkCall:{[e;l]$[(1=c:count e)&11=type e0:e 0;e;104=type(1;e0);enlist e0;((c>3)&e0~($))|any e0~/:`do`while`if;e0,.qchk.chk0[.qchk.chkExpr;1_e;l];any e0~/:(?;!);.qchk.chkSQL[e;l];any e0~/:(@;.);.qchk.ifnMap[e0~(.);0|3&c-2][],.qchk.chk0[.qchk.chkExpr;1_e;l];
   (c=3)&$[101=type e0;20>value e0;e0~(:)];.qchk.chkAssign[e;l];103=type e0;[v:.qchk.chk0[.qchk.chkExpr;1_e;l];$[2=c;(e0;(ch_adv),v);(3=c)&(')~e0;(ch_comp),v;'"bad adverb"]];.qchk.addApp .qchk.chk0[.qchk.chkExpr;e;l]]};
 .qchk.chkFn:{[e;l]$[not null n:.q?e;$[null v:.qchk.QMap n;[.qchk.err"access denied: ",string n;e];v];e in(<>;<=;>=);e;(t:type e)in 101 102h;e;103=t;({x ch_adv y};e);100<>type e;.qchk.chkExpr[.qchk.ve e;l];.qchk.chkUserFn[e;l]]};
 .qchk.chkUserFn:{[e;l]if[not null f:.qchk.fnMap e;:f]; if[e in value .qchk.fnMap; :e]; if[not null first(v:value e)3;.qchk.err"non default namespaces are not allowed: ",.Q.s1 e]; :.qchk.fnMap[e]:.qchk.razeFn[v 1].qchk.chkExpr[.qchk.pf e;(raze v 1 2)except`]};

@@ -303,10 +303,13 @@ tests:
   (".test.a:1 2; .test.b:3 4; .test.a,'.test.b";(1 3;2 4));
   (({x`a};`a`b!(1;hopen));"*denied*");
   ("{sum exec {x+y}[;1] each a from ([] a: til 10)}[]";55);
-  ("sum exec {x+y}[;1] each a from ([] a: til 10)";55)
+  ("sum exec {x+y}[;1] each a from ([] a: til 10)";55);
+  ("{select {x+y}[;1] each a from ([] a: til 10)}[]";([] a: 1+til 10));
+  ("select {x+y}[;1] each a from ([] a: til 10)";([] a: 1+til 10));
+  ("{eval enlist[.test.mv],`.qchk.check}[]";::)
  )
 
-
+.test.mv:.qchk.mv;
 test:{eval .qchk.chkExpr[$[10=type x;parse x;x];()]};
 .qchk.chkR:{if[-11=type x;if[not x like ".test*";.qchk.err "access denied: ",string x]];x}; / read access
 .qchk.chkW:{if[-11=type x;if[not x like ".test*";.qchk.err "access denied: ",string x]];x}; / write access
