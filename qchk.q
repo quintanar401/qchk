@@ -1,7 +1,7 @@
 .qchk.pf:{if["["=first x:trim -1_1_ string x; x:(1+first where"]"=x)_x]; parse x}; / parse fn
 / .qchk.ps:{x:x where not 2=0 (0 0 1 1 0 3 0 0;0 0 1 1 2 3 0 0;0 0 2 2 2 2 2 2;3 3 3 3 3 0 4 3;3 3 3 3 3 3 3 3)\"\r\n\t /\"\\"?x; x[where x in"\r\n"]:" "; parse x}; / parse str, remove comments
 .qchk.ps:parse;
-.qchk.pv:{$[type[x]in 0 11h; enlist[$[10=type x 0;`$x 0;x 0]],.qchk.ve each 1_ x;.qchk.ve x]}; / parse value expr (unwind complex types)
+.qchk.pv:{$[type[x]in 0 11h; enlist[$[10=type x 0;parse x 0;x 0]],.qchk.ve each 1_ x;.qchk.ve x]}; / parse value expr (unwind complex types)
 .qchk.ve:{$[11=abs t:type x;$[0=count x;($;(),`;());(1=count x)&11=t;(enlist;x);enlist x];0>t;$[-19>t;($;(),key x;value x);x];0=t;$[0=count x;x;enlist[enlist],.z.s each x];98>t;$[0=count x;($;(),key x;());1=count x;(enlist;.z.s x 0);
   20>t;x;($;(),key x;value x)];98=t;(flip;.z.s flip x);99=t;(!;.z.s key x;.z.s value x);t<104;x;(not null .q?x)|x in(<>;<=;>=);x;t=112;x;t>112;'"unexp";[v:.z.s each value x;$[104=t;v;((';';/;\;':;/:;\:)t-105;v)]]]};
 
@@ -39,7 +39,7 @@
 .q.ch_dot4:{[x;y;z;a].[x;y;$[100>type x:.qchk.chkW x;.qchk.chkH .qchk.chkR z;z];a]};
 .q.ch_lsq:{if[(type x)in -6 -7h;if[(x<0)|null x;.qchk.err"access to internal functions like -n!exp is denied"]]; ![.qchk.chkR x;.qchk.chkW y]}; / !
 .q.ch_find:{?[.qchk.chkW x;$[-11=type y;$[y in`0`1`2`3`4`5`6`7`8;y;.qchk.chkR y];y]]}; / ?
-.q.ch_exec:{if[1=type x;:?[x;y;z]]; ?[x;y;.qchk.chkExpr[z;@[{`i,cols x};x;`$()]]]};
+.q.ch_exec:{if[1=abs type x;:?[x;y;z]]; ?[x;y;.qchk.chkExpr[z;@[{`i,cols x};x;`$()]]]};
 .q.ch_tables:{$[any x~/:(::;`;`.);.qchk.chkRFlt tables[];-11=type x;tables .qchk.chkR x;'"type"]};
 .q.ch_views:{.qchk.chkRFlt views[]};
 .q.ch_view:{view .qchk.chkR x};
@@ -76,7 +76,7 @@
 .qchk.mkSExp:{.qchk.razeExp .qchk.ve $[(type[x]in 0 11h)&1=count x;x 0;x]}
 .qchk.chkAssign:{[e;l]if[not -11=type v:first e 1;.qchk.err"unexpected var in assign: ",.Q.s1 v]; if[not e[0] in .qchk.as;.qchk.err"unsupported assign to ",string v]; .qchk.chkNameW[v;l]; (e 0;$[-11=type e 1;v;v,1_.qchk.chkExpr[e 1;l]];.qchk.chkExpr[e 2;l])};
 .qchk.chk0:{[f;e;l] i:where 104=type each(1;)each e; @[f[;l]each e;i;{.qchk.mv}]};
-.qchk.addApp:{$[1<count x;$[(t:type x 0)in 0 11 -11h;enlist[(ch_app;x 0)],1_x;t in -6 -7h;[.qchk.err"access to handles is denied";x];x];x]};
+.qchk.addApp:{$[1<count x;$[(t:type x 0)in 0 11 -11h;enlist[(ch_app;x 0)],1_x;t in -6 -7h;[.qchk.chkH x 0;x];x];x]};
 .qchk.ifnMap:(({ch_at2};{ch_at2};{ch_at3};{ch_at4};{'"@: rank"});({ch_dot2};{ch_dot2};{ch_dot3};{ch_dot4};{'".: rank"}));
 .qchk.fnMap:{x!x}enlist(::); / processed user fns
 .qchk.QMap:{x!.q x}(key .q)except``hopen`hclose`hcount`read0`read1`exit`0:`1:`2:`2::`save`load`rsave`rload`setenv`dsave; / named Q fns except denied
