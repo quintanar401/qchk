@@ -1,4 +1,4 @@
-.qchk.pf:{if["["=first x:trim -1_1_ string x; x:(1+first where"]"=x)_x]; parse x}; / parse fn
+.qchk.pf:{if[all((x?"[")#x:-1_1_ string x)in" \n\r"; x:(1+first where"]"=x)_x]; parse x}; / parse fn
 / .qchk.ps:{x:x where not 2=0 (0 0 1 1 0 3 0 0;0 0 1 1 2 3 0 0;0 0 2 2 2 2 2 2;3 3 3 3 3 0 4 3;3 3 3 3 3 3 3 3)\"\r\n\t /\"\\"?x; x[where x in"\r\n"]:" "; parse x}; / parse str, remove comments
 .qchk.ps:parse;
 .qchk.pv:{$[type[x]in 0 11h; enlist[$[10=type x 0;parse x 0;x 0]],.qchk.ve each 1_ x;.qchk.ve x]}; / parse value expr (unwind complex types)

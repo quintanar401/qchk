@@ -306,7 +306,8 @@ tests:
   ("sum exec {x+y}[;1] each a from ([] a: til 10)";55);
   ("{select {x+y}[;1] each a from ([] a: til 10)}[]";([] a: 1+til 10));
   ("select {x+y}[;1] each a from ([] a: til 10)";([] a: 1+til 10));
-  ("{eval enlist[.test.mv],`.qchk.check}[]";::)
+  ("{eval enlist[.test.mv],`.qchk.check}[]";::);
+  ("{ \n [x] x+1}[1]";2)
  )
 
 .test.mv:.qchk.mv;
