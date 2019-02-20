@@ -307,7 +307,10 @@ tests:
   ("{select {x+y}[;1] each a from ([] a: til 10)}[]";([] a: 1+til 10));
   ("select {x+y}[;1] each a from ([] a: til 10)";([] a: 1+til 10));
   ("{eval enlist[.test.mv],`.qchk.check}[]";::);
-  ("{ \n [x] x+1}[1]";2)
+  ("{ \n [x] x+1}[1]";2);
+  ("count eval (?;([] a:til 10);enlist enlist (=;`a;1);0b;enlist[`a]!enlist `a)";1);
+  ("count {select {x+1815} a from ([] a:til 10)} peach 0 1";2);
+  ("type first first ![([]a: 1 2 3);();0b;enlist[`a]!enlist enlist (enlist `a;enlist `b;enlist `c)]`a";-11h)
  )
 
 .test.mv:.qchk.mv;
