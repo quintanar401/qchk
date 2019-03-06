@@ -310,7 +310,14 @@ tests:
   ("{ \n [x] x+1}[1]";2);
   ("count eval (?;([] a:til 10);enlist enlist (=;`a;1);0b;enlist[`a]!enlist `a)";1);
   ("count {select {x+1815} a from ([] a:til 10)} peach 0 1";2);
-  ("type first first ![([]a: 1 2 3);();0b;enlist[`a]!enlist enlist (enlist `a;enlist `b;enlist `c)]`a";-11h)
+  ("type first first ![([]a: 1 2 3);();0b;enlist[`a]!enlist enlist (enlist `a;enlist `b;enlist `c)]`a";-11h);
+  ("1b";{(<=)~first .qchk.checkv "1<=2"}[]);
+  ("1b";{(>=)~first .qchk.checkv "1>=2"}[]);
+  ("1b";{(<>)~first .qchk.checkv "1<>2"}[]);
+  ("1b";{(>=)~.qchk.chkExpr[.qchk.evalRepl eval .qchk.checkv "{(';not;<)}[]";()]}[]);
+  ("count eval parse \"select from ([] a:1 2 3 4) where a<=3\"";3);
+  ("eval ((';{x+1};{x+2});2)";5);
+  ("count eval (?;([]a:1 2 3);();0b;())";3)
  )
 
 .test.mv:.qchk.mv;

@@ -3,8 +3,8 @@
 qchk ensures that user queries either in string or binary format can't modify any internal or external state if this is not authorized explicitly. That is:
 * A query can't read or write to any variable or system path without explicit authorization.
 * A query can't read or write to any variable using its symbolic name or indirectly using another variable or some expression.
-* A query can't also do this using QSQL statements.
-* Certain functions are not allowed like hopen. It is expected that if this functionality is needed it is provided via a custom API.
+* A query also can't do this using QSQL statements.
+* Certain functions like hopen are not allowed. It is expected that if this functionality is needed it is provided via a custom API.
 * Some functions (like value) are restricted to a subset of their functionality. Value for example can be applied to dictionaries, it checks its argument when it is applied to symbols and it will throw an exception if it is applied to a string.
 
 All these restrictions are to ensure that a user can't modify or read or open any variable or file or handle without permission. If all user queries are checked and he doesn't have access to functions similar to value, eval and etc you are 100% guaranteed that he will not be able to read/modify anything.
@@ -18,7 +18,7 @@ To perform checks:
 Reimplement functions:
 * .qchk.chkH - for allowed handles.
 * .qchk.chkR - check read access to a name.
-* .qchk.chkH - check write access to a name.
+* .qchk.chkW - check write access to a name.
 * .qchk.err - action on an access error. Note that you may not throw an exception just record the access violation.
 
 ## Restricted functions
