@@ -19,7 +19,8 @@
 {.q[`$string x]:x}(2::;0:;1:;2:;exit;setenv;insert); / name them for access denied
 .q[`find`at2`dot2]:(?;@;.);
 .q.ch_key:.q.ch_inv:{key .qchk.chkR x};
-.q.ch_value:.q.ch_get:{if[not(t=-11)|(t:type x:.qchk.chkR x)within 20 99h;.qchk.err"value accepts only enums, symbols, tables and dicts"]; value x};
+.q.ch_value:.q.ch_get:{if[(t=-11)|(abs t:type x:.qchk.chkR x)within 20 99h;:value x]; if[t=10; :eval .qchk.check x];
+   if[t in 0 11h; :(eval .qchk.check x 0). 1_x]; .qchk.err"value accepts only enums, symbols, tables, strings, lists and dicts"; value x};
 .q.ch_parse:{.qchk.chkExpr[parse x;()]};
 .q.ch_eval:{eval .qchk.chkExpr[.qchk.evalRepl x;()]};
 .q.ch_reval:{reval .qchk.chkExpr[.qchk.evalRepl x;()]};

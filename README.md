@@ -30,7 +30,7 @@ These functions will cause an access exception: hopen hclose hcount read0 read1 
 ### Restricted functions
 
 * key - read access for x.
-* value/get - read access if x is a symbol, exception if x is not a enum/dict/table.
+* value/get - read access if x is a symbol, value of enum/dict/table, eval on (fn;list) with full check for fn (eval + check if it is a string), eval + check for strings exception otherwise.
 * parse - apply checks recursively if for the result of parse.
 * eval/reval - apply checks recursively to x.
 * set - write access for x.
