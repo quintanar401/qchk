@@ -98,8 +98,8 @@ tests:
   (".[value;(),(+)]";"*only enums*");
   ("{.[value;(),(+)]}[]";"*only enums*");
   ("value `a";"*denied*");
-  ("value(+;1;2)";"*only enums*");
-  ("value \".test.a\"";"*only enums*");
+  ("value(+;1;2)";3);
+  ("value \".test.a\"";20);
   (".test.a:10; value`.test.a";10);
   ("value([a:1 2 3] b:1 2 3)";([]b:1 2 3));
   ("{value([a:1 2 3] b:1 2 3)}[]";([]b:1 2 3));
@@ -311,10 +311,10 @@ tests:
   ("count eval (?;([] a:til 10);enlist enlist (=;`a;1);0b;enlist[`a]!enlist `a)";1);
   ("count {select {x+1815} a from ([] a:til 10)} peach 0 1";2);
   ("type first first ![([]a: 1 2 3);();0b;enlist[`a]!enlist enlist (enlist `a;enlist `b;enlist `c)]`a";-11h);
-  ("1b";{(<=)~first .qchk.checkv "1<=2"}[]);
-  ("1b";{(>=)~first .qchk.checkv "1>=2"}[]);
-  ("1b";{(<>)~first .qchk.checkv "1<>2"}[]);
-  ("1b";{(>=)~.qchk.chkExpr[.qchk.evalRepl eval .qchk.checkv "{(';not;<)}[]";()]}[]);
+  ("1b";{1~(.qchk.checkv "1<=2")1}[]);
+  ("1b";{1~(.qchk.checkv "1>=2")1}[]);
+  ("1b";{1~(.qchk.checkv "1<>2")1}[]);
+  ("1b";{(('),value[>=])~.qchk.chkExpr[.qchk.evalRepl eval .qchk.checkv "{(';not;<)}[]";()]}[]);
   ("count eval parse \"select from ([] a:1 2 3 4) where a<=3\"";3);
   ("eval ((';{x+1};{x+2});2)";5);
   ("count eval (?;([]a:1 2 3);();0b;())";3)
