@@ -95,7 +95,7 @@
   if[count b; b:f each b]; / where
   c:$[99=type c;f each c;f c]; / by
   d:$[99=type d;f each d;not[s]&11=abs type d;d;f d]; / what
-  : ((!;?)s)[a;b;c;d];
+  : ((!;?)s).(a;b;c;d);
  };
 .qchk.sl:{[a;l;e] $[-11=t:type e;$[e in a;e;count[l 0]=i:l[0]?e;e;{$[type[x]in 0 11 -11h;enlist x;x]}l[1;i]];t in 0 11h;$[2>count e;e;(ch_sql)~e 0;[e[1]:l[0]!l 1;.qchk.sl0[a;l;e]];.qchk.sl0[a;l;e]];e]}; / subst locals
 .qchk.sl0:{[a;l;e] i:where 104=type each(1;)each e; @[.qchk.sl[a;l]each e;i;{.qchk.mv}]};

@@ -317,12 +317,13 @@ tests:
   ("1b";{(('),value[>=])~.qchk.chkExpr[.qchk.evalRepl eval .qchk.checkv "{(';not;<)}[]";()]}[]);
   ("count eval parse \"select from ([] a:1 2 3 4) where a<=3\"";3);
   ("eval ((';{x+1};{x+2});2)";5);
-  ("count eval (?;([]a:1 2 3);();0b;())";3)
+  ("count eval (?;([]a:1 2 3);();0b;())";3);
+  ("exec b from ([] v: 1 2 3 4 5)";enlist "b")
  )
 
 .test.mv:.qchk.mv;
 test:{eval .qchk.chkExpr[$[10=type x;parse x;x];()]};
-.qchk.chkR:{if[-11=type x;if[not x like ".test*";.qchk.err "access denied: ",string x]];x}; / read access
+.qchk.chkR:{if[-11=type x;if[not (x=`b)|x like ".test*";.qchk.err "access denied: ",string x]];x}; / read access
 .qchk.chkW:{if[-11=type x;if[not x like ".test*";.qchk.err "access denied: ",string x]];x}; / write access
 
 {r:@[test;x 0;{x}]; if[not $[(10=type x 1)&10=type r;r like x 1;r~x 1]; -1 "FAILED: ",.Q.s1[x]," with ",.Q.s1 r]} each tests;

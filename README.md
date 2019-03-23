@@ -3,9 +3,9 @@
 qchk ensures that user queries either in string or binary format can't modify any internal or external state if this is not authorized explicitly. That is:
 * A query can't read or write to any variable or system path without explicit authorization.
 * A query can't read or write to any variable using its symbolic name or indirectly using another variable or some expression.
-* A query also can't do this using QSQL statements.
+* A query also can't do this using QSQL statements or side effects of system functions.
 * Certain functions like hopen are not allowed. It is expected that if this functionality is needed it is provided via a custom API.
-* Some functions (like value) are restricted to a subset of their functionality. Value for example can be applied to dictionaries, it checks its argument when it is applied to symbols and it will throw an exception if it is applied to a string.
+* Some functions (like value) are restricted to a subset of their functionality.
 
 All these restrictions are to ensure that a user can't modify or read or open any variable or file or handle without permission. If all user queries are checked and he doesn't have access to functions similar to value, eval and etc you are 100% guaranteed that he will not be able to read/modify anything.
 
@@ -19,19 +19,19 @@ Reimplement functions:
 * .qchk.chkH - for allowed handles.
 * .qchk.chkR - check read access to a name.
 * .qchk.chkW - check write access to a name.
-* .qchk.err - action on an access error. Note that you may not throw an exception just record the access violation.
+* .qchk.err - action on an access error. Note that you are not required to throw an exception, you can just record the access violation.
 
 ## Restricted functions
 
 ### Blocked functions
 
-These functions will cause an access exception: hopen hclose hcount read0 read1 exit 0: 1: 2: 2:: save load rsave rload setenv dsave.
+These functions will cause the access exception: hopen hclose hcount read0 read1 exit 0: 1: 2: 2:: save load rsave rload setenv dsave.
 
 ### Restricted functions
 
-* key - read access for x.
-* value/get - read access if x is a symbol, value of enum/dict/table, eval on (fn;list) with full check for fn (eval + check if it is a string), eval + check for strings exception otherwise.
-* parse - apply checks recursively if for the result of parse.
+* key - requires read access for x.
+* value/get - read access if x is a symbol, value of enum/dict/table, eval on (fn;arg1;..) with full check for fn (eval + check if it is a string), eval + check for strings, an exception otherwise.
+* parse - apply checks recursively for the result of parse.
 * eval/reval - apply checks recursively to x.
 * set - write access for x.
 * insert/upsert - write access for x.
@@ -43,17 +43,17 @@ These functions will cause an access exception: hopen hclose hcount read0 read1 
 * ! - read access for x, write access for y, if x is a number then exception if it is less than 0 or null (deny -3!x).
 * ? - write access for x, read access for y unless it is in \`0..\`9.
 * ?[x;y;z] - no checks if x is a boolean vector, otherwise apply checks to z with columns of x.
-* tables - for the global namespace filter the result according to read access rights, otherwise check x for read access.
-* views - filter the result according to read access rights.
+* tables - for the global namespace filter the result according to the read access rights, otherwise check x for read access.
+* views - filter the result according to the read access rights.
 * view/cols/keys/fkeys/meta - read access for x.
 * xkey/xasc/xdesc - write access for x.
 * not - it is the same function as hdel thus it will fail if x is a symbol.
 * pj - read access for y.
 * wj/wj1 - check recursively the last arg using its table columns.
-* system - allow "a" and "f" args and filter them according to read access rights.
+* system - allow "a" and "f" args and filter them according to the read access rights.
 * any function call - check the function for read and handle access.
 * any adverb creation - check the function for read and handle access.
 * function composition - check both args for read and handle access.
-* QSQL - apply checks to args using table columns.
+* QSQL - apply checks to args using table columns and local variables.
 * parted functions - apply checks as though it is a normal function call.
 * assignments - write access, some assignments like .: are not allowed.
