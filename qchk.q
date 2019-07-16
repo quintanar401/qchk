@@ -113,3 +113,48 @@
 .qchk.err:{'x};
 .qchk.check:{.qchk.chkExpr[$[10=type x;.qchk.ps x;x];`$()]}; / eval is expected to evaluate the result, x - either string or parse expr
 .qchk.checkv:{.qchk.chkExpr[$[10=type x;.qchk.ps x;.qchk.pv x];`$()]}; / like check but for value expressions
+
+/ Generic solution
+.qchk.walk0:{[e;l] i:where 104=type each(1;)each e; @[l[`expr][;l]each e;i;{.qchk.mv}]};
+.qchk.walk.expr:{[e;l] $[(t:type e)in 0 11h;$[1<c:count e;l[`call][e;l];1=c;$[11=abs type e 0;l[`const][e 0;l];.z.s[(enlist;e 0);l]];l[`const][e;l]];
+  99<t;$[112>t;l[`fn][e;l];'"type 112"];-11=t;l[`var][e;l];98>t;l[`const][e;l];.z.s[.qchk.ve e;l]]};
+.qchk.walk.const:{[e;l] $[11=abs type e;enlist e;e]};
+.qchk.walk.call:{[e;l] $[104=type(1;e0:e 0);l[`badcall][e;l];((3<c:count e)&e0~($))|any e0~/:`do`while`if;l[`control][e;l];(3<c)&any e0~/:(?;!);l[`qsql][e;l];(3<c)&any e0~/:(@;.);l[`app][e;l];
+  (3=c)&$[101=type e0;20>value e0;e0~(:)];l[`assign][e;l];(enlist)~e0;l[`enlist_call][e;l];103=type e0;$[2=c;l[`advcall][e;l];(3=c)&(')~e0;l[`composition][e;l];'"bad adverb"];`z.s~e0;l[`self_call][e;l];.qchk.walk0[e;l]]};
+.qchk.walk.enlist_call:{[e;l] $[104=type(1;e0:e 1);l[`enlist_badcall][e;l];((4<c:count e)&e0~($))|any e0~/:`do`while`if;l[`enlist_control][e;l];(4<c)&any e0~/:(?;!);l[`qsql][e;l];(4<c)&any e0~/:(@;.);l[`enlist_app][e;l];
+    (4=c)&$[101=type e0;20>value e0;e0~(:)];l[`enlist_assign][e;l];103=type e0;$[3=c;l[`enlist_advcall][e;l];(4=c)&(')~e0;l[`enlist_composition][e;l];'"bad adverb"];`z.s~e0;l[`enlist_self_call][e;l];.qchk.walk0[e;l]]};
+.qchk.walk.fn:{[e;l] $[not null n:.q?e;l[`systemfn][n;l];(t:type e)in 101 102h;l[`systemfn][e;l];103=t;l[`adv][e;l];100=t;l[`userfn][e;l];.z.s[.qchk.ve e;l]]};
+.qchk.walk.systemfn:{[e;l] $[-11=type e;.q e;e]};
+.qchk.walk.userfn:{[e;l] v:value e; l[`function`args`locals`columns]:(e;v 1;v 2;()); l[`expr][.qchk.pf e;l]};
+.qchk.walk.var:{[e;l] $[e in l`args;l`arg;e in l`locals;l`local;`.z.s=e;l`self;l`global][e;l]};
+.qchk.walk.simple_assign:{[e;l] (2#e),enlist l[`expr][e 2;l]};
+.qchk.walk.enlist_simple_assign:{[e;l] (3#e),enlist l[`expr][e 3;l]};
+.qchk.walk.general_assign:{[e;l] (e 0;e[1;0],.qchk.walk0[1_e 1;l];l[`expr][e 2;l])};
+.qchk.walk.enlist_general_assign:{[e;l] e[0 1],(e[2;0],.qchk.walk0[1_e 2;l];l[`expr][e 3;l])};
+.qchk.walk.assign:{[e;l] $[-11=type e 1;l`simple_assign;l`generic_assign][e;l]};
+.qchk.walk.enlist_assign:{[e;l] $[-11=type e 2;l`enlist_simple_assign;l`enlist_generic_assign][e;l]};
+.qchk.walk.control:{[e;l] $[not -11=type e0:e 0;l`case;l e0][e;l]};
+.qchk.walk.enlist_control:{[e;l] $[not -11=type e1:e 1;l`enlist_case;l `$"enlist_",string e1][e;l]};
+.qchk.walk.qsql:{[e;l] t:$[-11=type e1:e 1;@[get;e1;()];e1]; l[`columns]:@[cols;e1;()]; enlist[e 0],.qchk.walk0[1_e;l]};
+.qchk.walk.enlist_qsql:{[e;l] t:$[-11=type e2:e 2;@[get;e2;()];e2]; l[`columns]:@[cols;e2;()]; e[0 1],.qchk.walk0[2_e;l]};
+.qchk.walk.self_call:{[e;l] enlist[e 0],.qchk.walk0[1_e;l]};
+.qchk.walk.enlist_self_call:{[e;l] e[0 1],.qchk.walk0[2_e;l]};
+.qchk.walk[`do`case`if`while`advcall`composition`app]:{[e;l] enlist[e 0],.qchk.walk0[1_e;l]};
+.qchk.walk[{`$"enlist_",/:string x}`do`case`if`while`advcall`composition`app]:{[e;l] e[0 1],.qchk.walk0[2_e;l]};
+.qchk.walk[`arg`local`global`self`badcall`enlist_badcall`adv]:{[e;l] e};
+/ constants
+.qchk.walk[`function`args`locals`columns]:(::;();();());
+/ reduce walk
+.qchk.rwalk:.qchk.walk;
+.qchk.rwalk[`arg`local`global`self`badcall`enlist_badcall`adv`const`systemfn]:{[e;l] ()};
+.qchk.rwalk[`enlist_generic_assign`enlist_simple_assign`enlist_call,{x,`$"enlist_",/:string x}`do`case`if`while`advcall`composition`app`self_call`qsql]:{[e;l] raze .qchk.walk0[e;l]};
+.qchk.rwalk.call:value ssr[string .qchk.walk.call;".qchk.walk0";"raze .qchk.walk0"];
+.qchk.rwalk.simple_assign:{[e;l] l[`expr][e 2;l]};
+.qchk.rwalk.general_assign:{[e;l] raze .qchk.walk0[1_e 1;l],enlist l[`expr][e 2;l]};
+/ fold walk
+.qchk.fwalk:.qchk.walk;
+.qchk.fwalk[`arg`local`global`self`badcall`enlist_badcall`adv`const`systemfn]:{[e;l] l};
+.qchk.fwalk[`enlist_generic_assign`enlist_simple_assign`enlist_call,{x,`$"enlist_",/:string x}`do`case`if`while`advcall`composition`app`self_call`qsql]:{[e;l] {.qchk.walk0[y;x]}/[l;reverse e]};
+.qchk.fwalk.call:value ssr[string .qchk.walk.call;".qchk.walk0";"{{.qchk.walk0[y;x]}/[y;x]}"];
+.qchk.fwalk.simple_assign:{[e;l] l[`expr][e 2;l]};
+.qchk.fwalk.general_assign:{[e;l] l:l[`expr][e 2;l]; {.qchk.walk0[y;x]}/[l;reverse 1_e 1]};
