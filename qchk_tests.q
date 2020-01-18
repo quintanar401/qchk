@@ -217,6 +217,23 @@ tests:
   ("{a:`noacc; a \"tst\"}[]";"*denied*");
   ("`noacc 1";"*denied*");
   ("{`noacc 1}[]";"*denied*");
+  ("a:system \"T 100\"";"*denied*");
+  ("system \"t 1+1\"";0);
+  ("system \"t 1+a\"";"*denied*");
+  ("system \"t:1+1 1+1\"";0);
+  ("system \"t:1+a 1+1\"";"*denied*");
+  ("system \"ts 1+1\"";(0;432));
+  ("system \"ts 1+a\"";"*denied*");
+  ("system \"ts:1+1 1+1\"";(0;432));
+  ("system \"ts:1+a 1+1\"";"*denied*");
+  ("{system \"t 1+1\"}[]";0);
+  ("{system \"t 1+a\"}[]";"*denied*");
+  ("{system \"t:1+1 1+1\"}[]";0);
+  ("{system \"t:1+a 1+1\"}[]";"*denied*");
+  ("{system \"ts 1+1\"}[]";(0;432));
+  ("{system \"ts 1+a\"}[]";"*denied*");
+  ("{system \"ts:1+1 1+1\"}[]";(0;432));
+  ("{system \"ts:1+a 1+1\"}[]";"*denied*");
   / composition
   ("(')[{x+1};{x+y}] . (1;2)";4);
   ("{(')[{x+1};{x+y}] . (1;2)}[]";4);

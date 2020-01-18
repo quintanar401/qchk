@@ -50,7 +50,7 @@ These functions will cause the access exception: hopen hclose hcount read0 read1
 * not - it is the same function as hdel thus it will fail if x is a symbol.
 * pj - read access for y.
 * wj/wj1 - check recursively the last arg using its table columns.
-* system - allow "a" and "f" args and filter them according to the read access rights.
+* system - allow "a", "t", "ts" and "f" args and filter/process them according to the access rights.
 * any function call - check the function for read and handle access.
 * any adverb creation - check the function for read and handle access.
 * function composition - check both args for read and handle access.
